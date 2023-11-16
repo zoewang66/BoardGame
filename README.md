@@ -4,8 +4,8 @@ The following features have been implemented:
 
 A flexible framework that can be used to create games like Connect4
 Different game modes can be chosen:
-o Human vs. Human
-o Human vs. Computer
+ - Human vs. Human
+ - Human vs. Computer
 
 Human players’ moves would be validation if it is following the rules
 1. A valid move of computer player would be randomly selected by system
