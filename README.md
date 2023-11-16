@@ -1,12 +1,11 @@
 # Design summary
 The C# Program is designed to make it easy to create different two-player board games that is extensible and reusable.
 The following features have been implemented:
-
-A flexible framework that can be used to create games like Connect4
+
 Different game modes can be chosen:
  - Human vs. Human
  - Human vs. Computer
-
+
 Human players’ moves would be validation if it is following the rules
 1. A valid move of computer player would be randomly selected by system
 2. Games can be saved and loaded for any point and resume by player
