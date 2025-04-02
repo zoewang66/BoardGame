@@ -1,184 +1,144 @@
 ﻿using System;
-using System.Numerics;
-using System.Reflection;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using static System.Console;
 
 namespace GameDesign
 {
-
     public abstract class Game
     {
-        public string helpMessage;
-        public string[][] table;
-        public Player player1;
-        public Player player2;
-        public Player activePlayer;
-        public Board board;
-        public Piece piece;
-        public Move move;
-        public static string model;
-        public List<Player> playerList;
-
+        public string helpMessage { get; set; } = string.Empty;
+        public string[][] table { get; set; } = Array.Empty<string[]>();
+        public Player player1 { get; set; } = new Player("1");
+        public Player player2 { get; set; } = new Player("2");
+        public Player activePlayer { get; set; } = new Player("1");
+        public Board board { get; set; } = new Board(6, 7);
+        public Piece piece { get; set; } = new Piece();
+        public Move move { get; set; } = new Move();
+        public static string model = "1";
+        public List<Player> playerList { get; set; } = new List<Player>();
 
         private Game game;
         public Game GAME
         {
-            get
-            {
-                return game;
-            }
-
-            set
-            {
-                this.game = value;
-            }
+            get => game;
+            set => game = value;
         }
 
-        public Game(Player player1, Player player2)
+        public Game(Player p1, Player p2)
         {
-            this.player1 = player1;
-            this.player2 = player2;
-            this.playerList = new List<Player>();
+            player1 = p1;
+            player2 = p2;
+            playerList = new List<Player> { p1, p2 };
         }
 
         public virtual void getStart() { }
+        public virtual void Run() { }
 
+        public virtual string getSymbol()
+        {
+            if (activePlayer.symbolTrack.Count > 0)
+                return activePlayer.symbolTrack.Last();
+            return "X";
+        }
 
-        public virtual void
-            Run() { }
-
-        public virtual string getSymbol() { return activePlayer.symbolTrack[activePlayer.symbolTrack.Count - 1]; }
-
-        public virtual Player switchPlayer() { return null; }
-
+        public virtual Player switchPlayer() => null;
 
         public void SaveAndExit()
         {
             SaveGameProgress("gameprogress.json");
             Environment.Exit(0);
-
         }
 
         public void LoadGameProgress(string fileName, Game gameInstance)
         {
-            if (File.Exists(fileName))
-            {
-                string json = File.ReadAllText(fileName);
-                GameProgress gameProgress = JsonSerializer.Deserialize<GameProgress>(json);
-                if (gameProgress != null && gameProgress.Table != null)
-                {
-                    board.table = gameProgress.Table;
-                    board.GenerateTable();
-                    if (!string.IsNullOrEmpty(gameProgress.SelectedModel))
-                    {
-                        model = (gameProgress.SelectedModel == "Human VS Human") ? "1" : "2";
+            if (!File.Exists(fileName)) return;
 
-                        if (model == "1")
-                        {
-                            gameInstance.player1 = new HumanPlayer("1");
-                            gameInstance.player2 = new HumanPlayer("2");
-                            gameInstance.playerList = new List<Player> { gameInstance.player1, gameInstance.player2 };
-                        }
-                        else if (model == "2")
-                        {
-                            gameInstance.player1 = new HumanPlayer("1");
-                            gameInstance.player2 = new ComputerPlayer("2");
-                            gameInstance.playerList = new List<Player> { gameInstance.player1, gameInstance.player2 };
-                        }
-                    }
-                }
-                else
+            string json = File.ReadAllText(fileName);
+            GameProgress? gameProgress = JsonSerializer.Deserialize<GameProgress>(json);
+
+            if (gameProgress?.Table != null)
+            {
+                board.table = gameProgress.Table;
+                board.GenerateTable();
+
+                if (!string.IsNullOrEmpty(gameProgress.SelectedModel))
                 {
-                    WriteLine("Error: Loaded game progress is invalid or incomplete.\n");
+                    model = gameProgress.SelectedModel == "Human VS Human" ? "1" : "2";
+
+                    if (model == "1")
+                    {
+                        gameInstance.player1 = new HumanPlayer("1");
+                        gameInstance.player2 = new HumanPlayer("2");
+                    }
+                    else
+                    {
+                        gameInstance.player1 = new HumanPlayer("1");
+                        gameInstance.player2 = new ComputerPlayer("2");
+                    }
+                    gameInstance.playerList = new List<Player> { gameInstance.player1, gameInstance.player2 };
                 }
             }
-
+            else
+            {
+                WriteLine("Error: Loaded game progress is invalid or incomplete.\n");
+            }
         }
 
         public void SaveGameProgress(string fileName)
         {
-
-            GameProgress gameProgress = new GameProgress
+            var gameProgress = new GameProgress
             {
                 Table = board.table,
-                SelectedModel = (model == "1") ? "Human VS Human" : "Human VS Computer"
+                SelectedModel = model == "1" ? "Human VS Human" : "Human VS Computer"
             };
 
             string json = JsonSerializer.Serialize(gameProgress);
             File.WriteAllText(fileName, json);
         }
 
-
         public List<Player> modelChoose()
         {
             const string MODEL1 = "Human VS Human";
             const string MODEL2 = "Human VS Computer";
 
-            Write("If you want to play with Human, please enter 1, if you want to play with Computer, please enter 2 >> ");
-            model = ReadLine();
-            bool flag = true;
-            do
+            Write("If you want to play with Human, enter 1; with Computer, enter 2 >> ");
+            model = ReadLine()?.Trim() ?? "1";
+
+            while (model != "1" && model != "2")
             {
-                //Human plays with Human
-                if (model == "1")
-                {
-                    flag = true;
-                    player1 = new HumanPlayer("1");
-                    player2 = new HumanPlayer("2");
-                    playerList = new List<Player> { player1, player2 };
-                    WriteLine("You are in the Model of {0}!", MODEL1);
-                    WriteLine("Player list: {0}, {1}\n", player1.ToString(), player2.ToString());
-                }
+                WriteLine("Invalid input. Please enter 1 or 2.");
+                model = ReadLine()?.Trim() ?? "1";
+            }
 
-                //Huamn plays with Computer
-                else if (model == "2")
-                {
-                    flag = true;
-                    player1 = new HumanPlayer("1");
-                    player2 = new ComputerPlayer("2");
-                    playerList = new List<Player> { player1, player2 };
-                    WriteLine("You are in the Model of {0}!", MODEL2);
-                    WriteLine("Player list: {0}, {1}\n", player1.ToString(), player2.ToString());
-                }
-                else
-                {
-                    WriteLine("Please enter a valid value (1 or 2)!\n");
-                    model = ReadLine();
-                    flag = false;
-                }
-            } while (!flag);
+            if (model == "1")
+            {
+                player1 = new HumanPlayer("1");
+                player2 = new HumanPlayer("2");
+                WriteLine("You are in the Model of {0}!", MODEL1);
+            }
+            else
+            {
+                player1 = new HumanPlayer("1");
+                player2 = new ComputerPlayer("2");
+                WriteLine("You are in the Model of {0}!", MODEL2);
+            }
 
+            playerList = new List<Player> { player1, player2 };
+            WriteLine("Player list: {0}, {1}\n", player1, player2);
             return playerList;
         }
 
-        public virtual List<Move> MakeMove(string symbol)
-        {
-            return activePlayer.playerMoveList;
-
-        }
-        public virtual List<Move> MakeMove()
-        {
-            return activePlayer.playerMoveList;
-
-        }
-
-        public virtual List<Move> SysMakeMove()
-        {
-            return activePlayer.playerMoveList;
-
-        }
-
-
+        public virtual List<Move> MakeMove(string symbol) => activePlayer.playerMoveList;
+        public virtual List<Move> MakeMove() => activePlayer.playerMoveList;
+        public virtual List<Move> SysMakeMove() => activePlayer.playerMoveList;
     }
-
-
 
     public class GameProgress
     {
-        public string[][] Table { get; set; }
-        public string SelectedModel { get; set; }
+        public string[][] Table { get; set; } = Array.Empty<string[]>();
+        public string SelectedModel { get; set; } = "";
     }
-
 }
-

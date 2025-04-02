@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
 using static System.Console;
 
@@ -13,11 +14,7 @@ namespace GameDesign
 
         public string[][] table;
 
-        public Board()
-        {
-            InitializeTable();
-            GenerateTable();
-        }
+        public Board() : this(6, 7) { }
 
         public Board(int row, int col)
         {
@@ -29,7 +26,6 @@ namespace GameDesign
 
         private void InitializeTable()
         {
-
             table = new string[Row + 1][];
             table[0] = new string[Col + 1];
             table[0][0] = " ";
@@ -39,6 +35,7 @@ namespace GameDesign
                 table[i] = new string[Col + 1];
                 table[i][0] = ((char)('A' + i - 1)).ToString();
             }
+
 
             for (int j = 1; j <= Col; j++)
             {
@@ -59,7 +56,7 @@ namespace GameDesign
             {
                 foreach (var cell in table[i])
                     Write($"│  {cell ?? " "}");
-                Console.WriteLine("│");
+                WriteLine("│");
                 if (i < rows - 1)
                     WriteLine(middle);
             }
@@ -68,11 +65,12 @@ namespace GameDesign
 
         public bool IsTableFilled()
         {
+            
             foreach (var row in table)
             {
                 foreach (var cell in row)
                 {
-                    if (cell == " ")
+                    if (string.IsNullOrWhiteSpace(cell))
                     {
                         return false;
                     }
@@ -82,4 +80,3 @@ namespace GameDesign
         }
     }
 }
-

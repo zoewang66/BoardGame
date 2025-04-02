@@ -1,62 +1,61 @@
-﻿using System.IO;
+﻿using System;
 using System.Collections.Generic;
-using System;
-using System.Diagnostics.Metrics;
-using System.Linq.Expressions;
-using System.Text.Json;
-
+using System.Linq;
 using static System.Console;
 
 namespace GameDesign
 {
     public class Connect4Game : Game
     {
-        private Connect4Game c4;
-        public Connect4Game C4
+        private string symbol1;
+        private string symbol2;
+        private List<string> symbolList;
+
+        private Player inactivePlayer;
+
+        private bool isUndo = false;
+        private bool isRedo = false;
+
+        private string input = "";
+
+        // 为了演示，给电脑落子用的随机数生成器
+        private Random random = new Random();
+
+        public Connect4Game(Player p1, Player p2) : base(p1, p2)
         {
-            get
-            {
-                return c4;
-            }
-            set
-            {
-                this.c4 = value;
-            }
-        }
-        string symbol1;
-        string symbol2;
-        List<string> symbolList;
-
-        Player activePlayer;
-        Player inactivePlayer;
-        Board connect4Board;
-        
-        string activeSymbol;
-        string inactiveSymbol;
-
-        bool isUndo = false;
-        bool isRedo = false;
-
-
-        string input;
-
-        string helpMessage = "Welcome to Connect Four Game!\nWe are here to help you to know the rules!\n"
-                             + "Here is the rule:\nEach player forms an unbroken chain of four pieces horizontally, vertically, or diagonally.\n"
-                             + "Who forms the unbroken chain forst, who wins the game.\n";
-
-        public Connect4Game(Player p1, Player p2):base(p1, p2)
-        {
-            GAME = this;
-            this.board = new Board(6, 7);
             symbolList = new List<string>() { "O", "X", " " };
             symbol1 = symbolList[0];
             symbol2 = symbolList[1];
+
+            helpMessage = "Welcome to Connect Four Game!\nWe are here to help you to know the rules!\n"
+                          + "Here is the rule:\nEach player forms an unbroken chain of four pieces horizontally, vertically, or diagonally.\n"
+                          + "Who forms the unbroken chain first, who wins the game.\n";
+
             WriteLine(" ");
             getStart();
             activePlayer = player1;
             inactivePlayer = player2;
             WriteLine(" ");
             Run();
+        }
+
+        public override void getStart()
+        {
+            WriteLine(helpMessage);
+
+            WriteLine("1. Start a new game");
+            WriteLine("2. Load game");
+            string choice = ReadLine();
+
+            if (choice == "2")
+            {
+                LoadGameProgress("gameprogress.json", this);
+            }
+            else
+            {
+                board = new Board(6, 7);
+                modelChoose();
+            }
         }
 
         public override void Run()
@@ -71,42 +70,29 @@ namespace GameDesign
                 }
                 else
                 {
-
                     if (activePlayer is HumanPlayer)
                     {
-                        chooseRedoUndo();
-                        ++count;
-
-                        while (isUndo == true || isRedo == true)
+                        // 允许连续进行撤销/重做操作，直到用户选择新落子
+                        while (chooseRedoUndo())
                         {
-                            bool flag = chooseRedoUndo();
-                            if (flag == true)
-                            {
-                                chooseRedoUndo();
-
-                            }
-                            else
-                            {
-                                break;
-                            }
-                            ++count;
+                            // 持续处理撤销/重做
                         }
+                        ++count;
                     }
                     else if (activePlayer is ComputerPlayer)
                     {
                         PlayertTypeMove();
                         ++count;
                     }
-
                 }
 
+                // 检查胜利条件
                 if (count > 6)
                 {
                     if (checkWin(symbol1))
                     {
                         WriteLine("{0} wins!", player1);
                         break;
-
                     }
                     else if (checkWin(symbol2))
                     {
@@ -117,80 +103,63 @@ namespace GameDesign
 
                 switchPlayer();
             }
-
         }
 
+        // 根据玩家类型决定如何落子
         public void PlayertTypeMove()
         {
             if (player1 is HumanPlayer && player1.Equals(activePlayer))
             {
-                WriteLine($"Player1: ");
+                WriteLine("Player1 (Human): ");
                 MakeMove(symbol1);
                 activePlayer.playerMoveList = player1.playerMoveList;
             }
             else if (player2 is HumanPlayer && player2.Equals(activePlayer))
             {
-                WriteLine($"Player2: ");
+                WriteLine("Player2 (Human): ");
                 MakeMove(symbol2);
                 activePlayer.playerMoveList = player2.playerMoveList;
             }
             else if (player2 is ComputerPlayer && player2.Equals(activePlayer))
             {
-                WriteLine($"Player2: ");
-                SysMakeMove(symbol2);
+                WriteLine("Player2 (Computer) is thinking...");
+                // 调用自动落子方法
+                ComputerMakeMove(symbol2);
                 activePlayer.playerMoveList = player2.playerMoveList;
             }
-
         }
 
-        public override void getStart()
-        {
-            WriteLine(helpMessage);
-
-            WriteLine("1. Start a new game");
-            WriteLine("2. Load game");
-            string choice = ReadLine();
-
-            if (choice == "2")
-            {
-                GAME.LoadGameProgress("gameprogress.json", this);
-            }
-            else
-            {
-                connect4Board = new Board(6, 7);
-                modelChoose();
-            }
-        }
-
-        // Human Player makes move
-        public List<Move> MakeMove(string symbol)
+        // 人类玩家落子逻辑（读控制台输入）
+        public override List<Move> MakeMove(string symbol)
         {
             int col = 0;
-            int row = board.Row; // Start from the bottom-most row
-            Write("Please enter the column you want to put your move (number 1 - 7), or enter Q to save and quit >> ");
-            input = ReadLine().ToUpper();
+            int row = board.Row;
+            Write("Please enter the column (1 - 7), or Q to save and quit >> ");
+            input = ReadLine();
 
             if (input == "Q")
             {
                 SaveAndExit();
             }
-            else if (input.Length == 1 && Char.IsDigit(input[0])
-                && int.Parse(input) >= 1 && int.Parse(input) <= 7)
+            else if (int.TryParse(input, out col) && col >= 1 && col <= 7)
             {
-                col = int.Parse(input);
-                while (row > 0 && board.table[row][col] != null) // Find the available position from the bottom
+                // 找到该列最底部的空位
+                while (row > 0 && board.table[row][col] != null)
                 {
                     row--;
                 }
 
                 if (row == 0)
                 {
-                    WriteLine("The column is full, please choose another one!");
-                                return MakeMove(symbol);
+                    WriteLine("That column is full, please choose another one!");
+                    return MakeMove(symbol);
                 }
 
+                // 在 (row, col) 落子
                 activePlayer.playerMoveList.Add(new Move(row, col));
-                
+                board.table[row][col] = symbol;
+                getSymbol();
+                board.GenerateTable();
             }
             else
             {
@@ -198,240 +167,143 @@ namespace GameDesign
                 return MakeMove(symbol);
             }
 
-            if (this.board.table[row][col] == null)
-            {
-                this.board.table[row][col] = symbol;
-                getSymbol();
-                this.board.GenerateTable();
-            }
-            else
-            {
-                WriteLine("Your move is invalid, please try again!");
-                return MakeMove(symbol);
-            }
             return activePlayer.playerMoveList;
+        }
+
+        // 电脑自动落子逻辑（随机列）
+        private void ComputerMakeMove(string symbol)
+        {
+            while (true)
+            {
+                // 随机从 1 到 board.Col 之间选列
+                int col = random.Next(1, board.Col + 1);
+                int row = board.Row;
+
+                // 找到该列最底部的空位
+                while (row > 0 && board.table[row][col] != null)
+                {
+                    row--;
+                }
+
+                // 如果 row == 0，说明该列满了，换列重试
+                if (row == 0)
+                {
+                    continue;
+                }
+
+                // 否则在 (row, col) 落子
+                activePlayer.playerMoveList.Add(new Move(row, col));
+                board.table[row][col] = symbol;
+                getSymbol();
+                board.GenerateTable();
+                break; // 跳出循环，结束电脑本次落子
+            }
         }
 
         public override string getSymbol()
         {
-            if (activePlayer is HumanPlayer && player1.Equals(activePlayer))
-            {
-                foreach (string p in symbolList)
-                {
-                    if (symbol1 == p)
-                    {
-                        activePlayer.symbolTrack.Add(p);
-                    }
-
-                }
-
-            }
-            else if (activePlayer is HumanPlayer && player2.Equals(activePlayer))
-            {
-                foreach (string p in symbolList)
-                {
-                    if (symbol2 == p)
-                    {
-                        activePlayer.symbolTrack.Add(p);
-                    }
-                }
-
-            }
-            else if (activePlayer is ComputerPlayer && player2.Equals(activePlayer))
-            {
-                foreach (string p in symbolList)
-                {
-                    if (symbol2 == p)
-                    {
-                        activePlayer.symbolTrack.Add(p);
-                    }
-                }
-
-            }
-            return activePlayer.symbolTrack[activePlayer.symbolTrack.Count - 1];
+            string chosen = symbol1;
+            if (player2.Equals(activePlayer)) chosen = symbol2;
+            activePlayer.symbolTrack.Add(chosen);
+            return chosen;
         }
 
+        // 撤销/重做菜单
         public bool chooseRedoUndo()
         {
-            const string UNDO = "U";
-            const string REDO = "R";
-            const string NEW = "N";
-
-            Write("If you want to undo your move, please enter U, if you want to redo your move, please enter R, if you want to put a new move, enter N: ");
+            Write("Undo (U), Redo (R), New Move (N), Quit (Q): ");
             string input = ReadLine().ToUpper();
-            if (input == NEW)
+
+            if (input == "N")
             {
+                // 直接让玩家进行新落子
                 PlayertTypeMove();
-                isRedo = false;
-                isUndo = false;
+                return false; // 跳出 while
             }
             else if (input == "Q")
             {
                 SaveAndExit();
+                return false; // 不会执行到这里
             }
-            else if (input == UNDO)
+            else if (input == "U")
             {
-                activePlayer.UndoMove(this.board);
-                inactivePlayer.UndoMove(this.board);
-                this.board.GenerateTable();
-                isUndo = true;
-                return true;
-            }
-            else if (input == REDO)
-            {
-
-                // Call RedoMove for the active player
-                activeSymbol = activePlayer.symbolTrack[activePlayer.symbolTrack.Count - 1];
-                activePlayer.RedoMove(this.board, GAME, activeSymbol);
-
-                // Pass the inactive player's symbol to the inactive player's RedoMove method
-                inactiveSymbol = inactivePlayer.symbolTrack[inactivePlayer.symbolTrack.Count - 1];
-                inactivePlayer.RedoMove(this.board, GAME, inactiveSymbol);
-
-
-
+                activePlayer.UndoMove(board);
                 board.GenerateTable();
-                isRedo = true;
-                return true;
+                return true; // 继续停留在撤销/重做菜单
+            }
+            else if (input == "R")
+            {
+                string symbol = activePlayer.symbolTrack.LastOrDefault() ?? "X";
+                activePlayer.RedoMove(board, this, symbol);
+                board.GenerateTable();
+                return true; // 继续停留在撤销/重做菜单
             }
             else
             {
-                WriteLine("Invalid input, system does not understand your operation!");
-                WriteLine("Please try again!");
-                chooseRedoUndo();
+                WriteLine("Invalid input, try again.");
+                return chooseRedoUndo();
             }
-            return false;
         }
 
         public override Player switchPlayer()
         {
             if (activePlayer.ID == player1.ID)
             {
-                if (player2 is HumanPlayer)
-                {
-                    activePlayer = player2;
-                    inactivePlayer = player1;
-                }
-                else if (player2 is ComputerPlayer)
-                {
-                    activePlayer = player2;
-                    inactivePlayer = player1;
-                }
+                activePlayer = player2;
+                inactivePlayer = player1;
             }
             else
             {
                 activePlayer = player1;
                 inactivePlayer = player2;
-
             }
-
             return activePlayer;
         }
 
-        // Computer Player makes move
-        public List<Move> SysMakeMove(string symbol)
-        {
-            int col = 0;
-            int row = this.board.Row; 
-            Random random = new Random();
-            col = random.Next(1, 8); // Random number between 1 and 7
-            while (row > 0 && this.board.table[row][col] != null) // Find the available position from the bottom
-            {
-                row--;
-            }
-
-            while (row == 0) // If the chosen column is full, choose another column
-            {
-                col = random.Next(1, 8);
-                row = this.board.Row;
-                while (row > 0 && this.board.table[row][col] != null)
-                {
-                    row--;
-                }
-            }
-
-            activePlayer.playerMoveList.Add(new Move(row, col));
-            board.table[row][col] = symbol;
-            getSymbol();
-            this.board.GenerateTable();
-            WriteLine($"Computer Player put a move in {Convert.ToChar('A' + row - 1)}{col}!");
-
-            return activePlayer.playerMoveList;
-        }
-
+        // 判断胜利
         public bool checkWin(string symbol)
         {
-            if (checkHorizontalWin(symbol) || CheckVerticalWin(symbol)
-                || CheckDiagonalWin(symbol))
-            {
-                return true;
-            }
-            return false;
+            return checkHorizontalWin(symbol) || CheckVerticalWin(symbol) || CheckDiagonalWin(symbol);
         }
 
-        public bool checkHorizontalWin(string symbol)
+        private bool checkHorizontalWin(string symbol)
         {
-            for (int i = 1; i < this.board.table.Length; ++i)
+            for (int i = 1; i < board.table.Length; ++i)
             {
-                for (int j = 1; j <= this.board.table[i].Length - 4; ++j)
+                for (int j = 1; j <= board.table[i].Length - 4; ++j)
                 {
-                    if (this.board.table[i][j] == symbol &&
-                        this.board.table[i][j + 1] == symbol &&
-                        this.board.table[i][j + 2] == symbol &&
-                        this.board.table[i][j + 3] == symbol)
-                    {
+                    if (Enumerable.Range(0, 4).All(offset => board.table[i][j + offset] == symbol))
                         return true;
-                    }
                 }
             }
             return false;
         }
 
-        public bool CheckVerticalWin(string symbol)
+        private bool CheckVerticalWin(string symbol)
         {
-            for (int i = 1; i <= this.board.table.Length - 4; ++i)
+            for (int i = 1; i <= board.table.Length - 4; ++i)
             {
                 for (int j = 1; j < board.table[i].Length; ++j)
                 {
-                    if (this.board.table[i][j] == symbol &&
-                        this.board.table[i + 1][j] == symbol &&
-                        this.board.table[i + 2][j] == symbol &&
-                        this.board.table[i + 3][j] == symbol)
-                    {
+                    if (Enumerable.Range(0, 4).All(offset => board.table[i + offset][j] == symbol))
                         return true;
-                    }
                 }
             }
             return false;
         }
 
-        public bool CheckDiagonalWin(string symbol)
+        private bool CheckDiagonalWin(string symbol)
         {
-            for (int i = 1; i <= this.board.table.Length - 4; ++i)
+            for (int i = 1; i <= board.table.Length - 4; ++i)
             {
-                for (int j = 1; j <= this.board.table[i].Length - 4; ++j)
+                for (int j = 1; j <= board.table[i].Length - 4; ++j)
                 {
-                    // check diagonal \
-                    if (this.board.table[i][j] == symbol &&
-                        this.board.table[i + 1][j + 1] == symbol &&
-                        this.board.table[i + 2][j + 2] == symbol &&
-                        this.board.table[i + 3][j + 3] == symbol)
-                    {
+                    if (Enumerable.Range(0, 4).All(offset => board.table[i + offset][j + offset] == symbol) ||
+                        Enumerable.Range(0, 4).All(offset => board.table[i + 3 - offset][j + offset] == symbol))
                         return true;
-                    }
-                    // check diagonal /
-                    if (this.board.table[i + 3][j] == symbol &&
-                        this.board.table[i + 2][j + 1] == symbol &&
-                        this.board.table[i + 1][j + 2] == symbol &&
-                        this.board.table[i][j + 3] == symbol)
-                    {
-                        return true;
-                    }
                 }
             }
             return false;
         }
-
     }
 }
-

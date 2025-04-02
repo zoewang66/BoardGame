@@ -1,17 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GameDesign
 {
     public class Piece
     {
-        public string symbol { get; set; }
+        public string symbol { get; set; } = " ";  // 默认初始化为空格，避免 null 警告
 
-        public Piece()
-        {
+        public List<string> symbolsList { get; set; } = new List<string>();
 
-        }
-
-        public List<string> symbolsList = new List<string>() { };
+        public Piece() { }
     }
 }
-

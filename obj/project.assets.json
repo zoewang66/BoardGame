@@ -1,15 +1,14 @@
 {
   "version": 3,
   "targets": {
-    "net6.0": {}
+    "net9.0": {}
   },
   "libraries": {},
   "projectFileDependencyGroups": {
-    "net6.0": []
+    "net9.0": []
   },
   "packageFolders": {
-    "/Users/wangpeiying/.nuget/packages/": {},
-    "/Users/wangpeiying/Library/Application Support/Godot/mono/GodotNuGetFallbackFolder": {}
+    "/Users/wangpeiying/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -20,22 +19,18 @@
       "packagesPath": "/Users/wangpeiying/.nuget/packages/",
       "outputPath": "/Users/wangpeiying/Desktop/BoardGame/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "/Users/wangpeiying/Library/Application Support/Godot/mono/GodotNuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "/Users/wangpeiying/.nuget/NuGet/NuGet.Config",
-        "/Users/wangpeiying/.nuget/NuGet/config/Godot.Offline.Config"
+        "/Users/wangpeiying/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net6.0"
+        "net9.0"
       ],
       "sources": {
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "projectReferences": {}
         }
       },
@@ -43,11 +38,17 @@
         "warnAsError": [
           "NU1605"
         ]
-      }
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
-      "net6.0": {
-        "targetAlias": "net6.0",
+      "net9.0": {
+        "targetAlias": "net9.0",
         "imports": [
           "net461",
           "net462",
@@ -64,7 +65,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.310/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

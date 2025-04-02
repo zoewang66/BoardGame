@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using static System.Console;
 
 namespace GameDesign
 {
     public class Move
     {
-        public int col;
-        public int row;
+        public int col { get; set; } = 0;
+        public int row { get; set; } = 0;
 
+        public Move() { }
 
         public Move(int row, int col)
         {
@@ -18,14 +15,9 @@ namespace GameDesign
             this.col = col;
         }
 
-        public Move()
+        public override string ToString()
         {
-
+            return $"Move(row: {row}, col: {col})";
         }
-
-
-
     }
-
 }
-

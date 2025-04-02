@@ -1,0 +1,15 @@
+/Users/wangpeiying/Desktop/BoardGame/bin/Debug/net9.0/GameDesign
+/Users/wangpeiying/Desktop/BoardGame/bin/Debug/net9.0/GameDesign.deps.json
+/Users/wangpeiying/Desktop/BoardGame/bin/Debug/net9.0/GameDesign.runtimeconfig.json
+/Users/wangpeiying/Desktop/BoardGame/bin/Debug/net9.0/GameDesign.dll
+/Users/wangpeiying/Desktop/BoardGame/bin/Debug/net9.0/GameDesign.pdb
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.GeneratedMSBuildEditorConfig.editorconfig
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.AssemblyInfoInputs.cache
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.AssemblyInfo.cs
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.csproj.CoreCompileInputs.cache
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.sourcelink.json
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.dll
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/refint/GameDesign.dll
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.pdb
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/GameDesign.genruntimeconfig.cache
+/Users/wangpeiying/Desktop/BoardGame/obj/Debug/net9.0/ref/GameDesign.dll
