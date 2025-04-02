@@ -58,22 +58,22 @@ The codebase is structured around **object-oriented design** principles, promoti
 ---
 # 🖥 How It Works
 **1.Choose a game mode**
-  Players select to play against a human or the computer.
+  - Players select to play against a human or the computer.
   
 **2.Make moves in turns**
-  Players enter a column number (1–7) to drop their piece.
+  - Players enter a column number (1–7) to drop their piece.
 
 **3.Computer player auto-moves**
-  In Human vs Computer mode, the AI randomly selects a valid column.
+  - In Human vs Computer mode, the AI randomly selects a valid column.
   
 **4.Game continues**
-  Until one player wins (4 pieces connected) or the board is full.
+  - Until one player wins (4 pieces connected) or the board is full.
 
 **5.Undo/Redo anytime**
-  Each player can revert or redo previous moves using menu options.
+  - Each player can revert or redo previous moves using menu options.
 
 **6.Save and resume**
-Players can quit and load progress later via JSON serialization.
+  - Players can quit and load progress later via JSON serialization.
 
 ---
 
