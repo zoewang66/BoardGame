@@ -48,11 +48,11 @@ The codebase is structured around **object-oriented design** principles, promoti
 
 ---
 # 🎯Game screenshots
-![Board View](./screenshot.png)
-![Board View](./screenshot.png)
-![Board View](./screenshot.png)
-![Board View](./screenshot.png)
-![Board View](./screenshot.png)
+![Board View](static/Screenshot1.png)
+
+![Board View](static/Screenshot4.png)
+
+![Board View](static/Screenshot5.png)
 
 
 ---
@@ -79,15 +79,16 @@ Players can quit and load progress later via JSON serialization.
 
 # 🧩 Class Diagram
 <img width="920" alt="Screenshot 2023-11-16 at 1 42 35 pm" src="https://github.com/zoewang66/BoardGame/assets/97823545/b462ed12-7cc1-4e3e-9b0b-41d6ec5264e7">
+
 Methods like SaveGameProgress() and LoadGameProgress() are implemented using the System.Text.Json library.The board is initialized inside the Connect4Game constructor.The symbolList dynamically tracks game symbols, which makes the framework flexible for other games.
 
 ---
 
 # 📌 How to Run
 
-1.Open the solution in Visual Studio or any C# IDE
-2.Build and run the project
-3.Follow on-screen instructions in the console
+- 1.Open the solution in Visual Studio or any C# IDE
+- 2.Build and run the project
+- 3.Follow on-screen instructions in the console
 
 ---
 
